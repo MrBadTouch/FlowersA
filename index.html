@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Árbol con Hojas y Contador</title>
+
+<style>
+  /* ============ RESET Y BASE ============ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #fff;
+  }
+
+  /* ============ FONDO CON BLUR ============ */
+  /* Cambia esta URL por tu imagen de fondo */
+  .fondo {
+    position: fixed;
+    inset: 0;
+    background: url('https://cdn.pixabay.com/photo/2024/08/19/15/01/sunflowers-8980921_1280.jpg') center/cover no-repeat;
+    z-index: -2;
+    transition: filter 2s ease-in-out;
+  }
+
+  /* Capa oscura encima del fondo para que el texto se lea */
+  .fondo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  /* Clase que activa el blur suave cada 5 segundos */
+  .fondo.blur-activo {
+    filter: blur(6px);
+  }
+
+  /* ============ LAYOUT PRINCIPAL ============ */
+  .contenedor {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    height: 100%;
+    padding: 4rem;
+    z-index: 1;
+  }
+
+  /* ============ TEXTO (IZQUIERDA) ============ */
+  .texto {
+    max-width: 500px;
+    animation: fadeIn 1.5s ease;
+  }
+
+  .texto h1 {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    margin-bottom: 1rem;
+    line-height: 1.15;
+    letter-spacing: 0.5px;
+  }
+
+  .texto p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    opacity: 0.9;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ IMAGEN DEL ÁRBOL (DERECHA) ============ */
+  .arbol-contenedor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+
+  /* Reemplaza el src del <img> por tu 'arbol.png' */
+  .arbol {
+    max-width: 90%;
+    max-height: 80vh;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));
+    animation: flotar 6s ease-in-out infinite;
+  }
+
+  @keyframes flotar {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-12px); }
+  }
+
+  /* ============ HOJAS CAYENDO ============ */
+  .hoja {
+    position: fixed;
+    top: -80px;
+    width: 40px;
+    height: 40px;
+    pointer-events: none;
+    z-index: 2;
+    background-size: contain;
+    background-repeat: no-repeat;
+    animation: caer linear forwards;
+    opacity: 0.85;
+  }
+
+  @keyframes caer {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 0;
+    }
+    10% { opacity: 0.9; }
+    100% {
+      transform: translateY(110vh) rotate(720deg);
+      opacity: 0.7;
+    }
+  }
+
+  /* ============ CONTADOR (INFERIOR IZQUIERDA) ============ */
+  .contador {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 1rem 1.4rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-family: 'Courier New', monospace;
+    z-index: 3;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    max-width: 360px;
+  }
+
+  .contador .etiqueta {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.7;
+    margin-bottom: 0.4rem;
+  }
+
+  .contador .tiempo {
+    display: block;
+    font-size: 1rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    line-height: 1.5;
+    max-width: 320px;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 768px) {
+    .contenedor {
+      grid-template-columns: 1fr;
+      padding: 2rem;
+      text-align: center;
+      gap: 2rem;
+    }
+    .texto { max-width: 100%; }
+    .arbol { max-height: 45vh; }
+    .contador {
+      left: 1rem;
+      bottom: 1rem;
+      padding: 0.8rem 1rem;
+      max-width: 260px;
+    }
+    .contador .tiempo { font-size: 0.85rem; }
+  }
+</style>
+</head>
+
+<body>
+
+  <!-- Fondo con blur -->
+  <div class="fondo" id="fondo"></div>
+
+  <!-- Contenedor principal -->
+  <div class="contenedor">
+
+    <!-- Texto lado izquierdo -->
+    <div class="texto">
+      <h1>Para ti, que floreces en mi vida</h1>
+      <p>
+        No hay flores suficientes para decirte todo lo que significás para mí, pero estas se acercan. Gracias por tu luz, tu risa y tu cariño. Te amo muchisimo mi amor <3
+      </p>
+    </div>
+
+    <!-- Imagen del árbol (lado derecho) -->
+    <div class="arbol-contenedor">
+      <!-- Reemplaza esta URL por tu 'arbol.png' -->
+      <img src="https://pngimg.com/uploads/sunflower/sunflower_PNG13368.png"
+           alt="Árbol"
+           class="arbol">
+    </div>
+
+  </div>
+
+  <!-- Contador inferior izquierdo (HACIA ADELANTE) -->
+  <div class="contador" id="contador">
+    <span class="etiqueta">Tiempo transcurrido</span>
+    <span class="tiempo" id="tiempo">0 años, 0 meses, 0 días, 0 h, 0 m, 0 s</span>
+  </div>
+
+<script>
+/* =====================================================
+   1. CONTADOR HACIA ADELANTE DESDE UNA FECHA INICIAL
+   ===================================================== */
+
+/* 
+   Formato: new Date(año, mes-1, día, hora, minuto, segundo)
+   ⚠️ El mes va de 0 a 11 → enero = 0, diciembre = 11
+*/
+const FECHA_INICIAL = new Date(2025, 9, 10, 8, 10, 0);
+const elTiempo = document.getElementById('tiempo');
+
+/* Calcula la diferencia entre dos fechas en años, meses, días, h, m, s */
+function calcularDiferencia(desde, hasta) {
+  let años  = hasta.getFullYear() - desde.getFullYear();
+  let meses = hasta.getMonth()    - desde.getMonth();
+  let días  = hasta.getDate()     - desde.getDate();
+  let horas = hasta.getHours()    - desde.getHours();
+  let mins  = hasta.getMinutes()  - desde.getMinutes();
+  let segs  = hasta.getSeconds()  - desde.getSeconds();
+
+  /* Ajustar negativos "pidiendo prestado" a la unidad superior */
+  if (segs < 0)  { segs  += 60; mins--;  }
+  if (mins < 0)  { mins  += 60; horas--; }
+  if (horas < 0) { horas += 24; días--;  }
+  if (días < 0) {
+    const mesAnterior = new Date(hasta.getFullYear(), hasta.getMonth(), 0).getDate();
+    días += mesAnterior;
+    meses--;
+  }
+  if (meses < 0) { meses += 12; años--; }
+
+  return { años, meses, días, horas, mins, segs };
+}
+
+/* Actualiza el texto del contador */
+function actualizarContador() {
+  const ahora = new Date();
+  const d = calcularDiferencia(FECHA_INICIAL, ahora);
+
+  elTiempo.textContent =
+    `${d.meses} meses, ${d.días} días, ` +
+    `${d.horas} h, ${d.mins} m, ${d.segs} s`;
+}
+
+/* Lanza el contador al instante y luego cada segundo */
+actualizarContador();
+setInterval(actualizarContador, 1000);
+
+/* =====================================================
+   2. EFECTO BLUR DEL FONDO CADA 5 SEGUNDOS
+   ===================================================== */
+const fondo = document.getElementById('fondo');
+
+setInterval(() => {
+  fondo.classList.add('blur-activo');
+  setTimeout(() => {
+    fondo.classList.remove('blur-activo');
+  }, 2500);
+}, 5000);
+
+/* =====================================================
+   3. HOJAS CAYENDO
+   ===================================================== */
+const IMAGENES_HOJAS = [
+  'https://pngimg.com/uploads/sunflower/sunflower_PNG13363.png',
+  'https://pngimg.com/uploads/sunflower/sunflower_PNG103745.png',
+  'https://pngimg.com/uploads/sunflower/sunflower_PNG103774.png',
+  'https://pngimg.com/uploads/sunflower/sunflower_PNG13363.png',
+  'https://pngimg.com/uploads/sunflower/sunflower_PNG13363.png'	
+];
+
+function crearHoja() {
+  const hoja = document.createElement('div');
+  hoja.className = 'hoja';
+
+  hoja.style.left = Math.random() * 100 + 'vw';
+
+  const tamaño = 25 + Math.random() * 30;
+  hoja.style.width  = tamaño + 'px';
+  hoja.style.height = tamaño + 'px';
+
+  const img = IMAGENES_HOJAS[Math.floor(Math.random() * IMAGENES_HOJAS.length)];
+  hoja.style.backgroundImage = `url('${img}')`;
+
+  const duracion = 8 + Math.random() * 6;
+  hoja.style.animationDuration = duracion + 's';
+  hoja.style.animationDelay = (Math.random() * 2) + 's';
+
+  document.body.appendChild(hoja);
+
+  setTimeout(() => hoja.remove(), (duracion + 3) * 1000);
+}
+
+setInterval(crearHoja, 700);
+</script>
+
+</body>
+</html>
